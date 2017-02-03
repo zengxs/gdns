@@ -2,7 +2,7 @@
 A Stupid DNS Server based on Google Public DNS Service
 
 ## configuration
-configuration file name is `config.toml`. 
+configuration file name is `config.toml`.  
 Example:
 ```toml
 [server]
