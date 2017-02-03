@@ -2,12 +2,14 @@ package com.matsuz.stupidns;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.moandjiezana.toml.Toml;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.xbill.DNS.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -29,12 +31,16 @@ public class Server {
 
     static OkHttpClient client;
     static Gson gson;
+    static TomlConfig config;
+
+    static InetSocketAddress address;
 
     Server() {
         try {
             channel = DatagramChannel.open(); // open a udp channel
             channel.configureBlocking(false); // 设置为非阻塞通道
-            channel.socket().bind(new InetSocketAddress(53)); // 绑定端口
+            channel.socket().bind(address); // 绑定端口
+            System.out.printf("Serving at %s...\n", address.toString());
 
             // 打开一个选择器
             selector = Selector.open();
@@ -47,6 +53,9 @@ public class Server {
     static {
         client = new OkHttpClient();
         gson = new Gson();
+
+        config = new Toml().read(new File("config.toml")).to(TomlConfig.class);
+        address = new InetSocketAddress(config.server.address, config.server.port);
     }
 
     /**
@@ -93,9 +102,54 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         new Server().work();
+//        Name name1 = Name.fromString("google.com", Name.root);
+//        Name name2 = Name.fromString("www.google.com.", Name.root);
+//        System.out.println(name2.subdomain(name1));
     }
 
-    private Message resolve(Message request, InetAddress address) {
+    private Message resolve(Message request, InetAddress address) throws IOException {
+        Name reqName = request.getQuestion().getName();
+        for (String name : config.address.keySet()) {
+            TomlConfig.Address configAddress = config.address.get(name);
+            Name configName = Name.fromString(name.replaceAll("^\"|\"$", ""), Name.root);
+            switch (configAddress.type) {
+                case "static":
+                    if (configName.equals(reqName)) return staticResolve(request, configAddress.address);
+                case "redirect":
+                    if (reqName.subdomain(configName)) return staticResolve(request, configAddress.address);
+            }
+        }
+
+        return googleResolve(request, address);
+    }
+
+
+    /**
+     * 返回静态 IP
+     *
+     * @param request
+     * @return
+     */
+    private Message staticResolve(Message request, String address) {
+        Message response = new Message();
+
+        // message initialize
+        response.getHeader().setID(request.getHeader().getID()); // set transaction id
+        response.getHeader().setFlag(Flags.QR); // mark the message as a response
+
+        response.addRecord(request.getQuestion(), Section.QUESTION);
+        try {
+            response.addRecord(Record.fromString(request.getQuestion().getName(),
+                    Type.A, DClass.IN, 0, address, Name.empty), Section.ANSWER);
+        } catch (IOException e) {
+            response.getHeader().setRcode(Rcode.SERVFAIL);
+            e.printStackTrace();
+        }
+
+        return response;
+    }
+
+    private Message googleResolve(Message request, InetAddress address) {
         Message response = new Message();
         Header reqHeader = request.getHeader(), respHeader = response.getHeader();
 
