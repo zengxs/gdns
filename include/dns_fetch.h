@@ -25,10 +25,12 @@
 
 #include <string>
 
+#include "json.hpp"
+
 namespace dns
 {
 
-const std::string
+const nlohmann::json
 fetch(const std::string &name, // the string of domain name
       const int &type,         // query type
       const std::string &ecs); // edns client subnet

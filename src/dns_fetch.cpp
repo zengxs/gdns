@@ -25,17 +25,19 @@
 #include <string>
 #include <sstream>
 
+#include "json.hpp"
 #include "dns_fetch.h"
 #include "http.h"
 
 #define GOOGLE_DNS_BASEURL "https://dns.google.com/resolve"
 
 using namespace std;
+using json = nlohmann::json;
 
 namespace dns
 {
 
-const string
+const json
 fetch(const string &name, // the string of domain name
       const int &type,    // query type
       const string &ecs)  // edns client subnet
@@ -47,6 +49,6 @@ fetch(const string &name, // the string of domain name
         << "&edns_client_subnet=" << ecs;
 
     string content = http::get(oss.str());
-    return content;
+    return json::parse(content);
 }
 }
