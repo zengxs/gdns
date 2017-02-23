@@ -43,6 +43,11 @@ const std::string get(const std::string &url)
     if (curl)
     {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        /* use http/2 and tls1.2 */
+        curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
         CURLcode res = curl_easy_perform(curl);
