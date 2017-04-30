@@ -12,7 +12,5 @@ public class GoogleDNSLauncher {
         Configuration.getInstance().setConfigPath(Paths.get("static.toml"));
 
         UDPServer.run();
-
-        System.out.println("Hello World!");
     }
 }
