@@ -1,0 +1,15 @@
+[
+  // 优先级从上至下；使用正则表达式匹配域名。
+  {
+    // example1
+    "pattern": "www1\\.example\\.com",
+    // www1\.example\.com
+    "address": "127.0.0.1"
+  },
+  {
+    // example2
+    "pattern": "www2\\.example\\.com",
+    // www1\.example\.com
+    "address": "127.0.0.2"
+  }
+]
