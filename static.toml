@@ -1,0 +1,18 @@
+[[ipv4]]
+# example ipv4
+pattern = '''www\.example\.com'''
+address = '127.0.0.1'
+
+[[ipv4]]
+pattern = '''www\.google\.com'''
+address = '172.217.27.132'
+
+
+[[ipv6]]
+# example ipv6
+pattern = '''www\.example\.com'''
+address = '::1'
+
+[[ipv6]]
+pattern = '''www\.google\.com'''
+address = '2404:6800:4008:800::2004'

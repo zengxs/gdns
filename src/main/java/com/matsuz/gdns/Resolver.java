@@ -24,19 +24,24 @@ public class Resolver {
 
     public static Message resolve(Name name, int rrType, String edns) throws IOException {
         // compare with static map
-        if (rrType == Type.A) {
-            List<Map<String, String>> configList = Configuration.getInstance().getConfigList();
-            for (Map<String, String> entry : configList) {
-                String regex = entry.get("pattern") + "\\.?";
-                if (Pattern.matches(regex, name.toString())) {
-                    Message response = new Message();
-                    response.addRecord(Record.fromString(
-                            name, rrType, DClass.IN, 0,
-                            entry.get("address"), Name.root
-                    ), Section.ANSWER);
-                    return response;
+        if (rrType == Type.A || rrType == Type.AAAA) {
+            List<Map<String, Object>> configList = null;
+            if (rrType == Type.A)
+                configList = Configuration.getInstance().getIPv4ConfigList();
+            else if (rrType == Type.AAAA)
+                configList = Configuration.getInstance().getIPv6ConfigList();
+            if (configList != null)
+                for (Map<String, Object> entry : configList) {
+                    String regex = entry.get("pattern") + "\\.?";
+                    if (Pattern.matches(regex, name.toString())) {
+                        Message response = new Message();
+                        response.addRecord(Record.fromString(
+                                name, rrType, DClass.IN, 0,
+                                (String) entry.get("address"), Name.root
+                        ), Section.ANSWER);
+                        return response;
+                    }
                 }
-            }
         }
 
         // request google public dns
