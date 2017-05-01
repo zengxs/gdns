@@ -48,7 +48,7 @@ public class Configuration {
             List<Map<String, Object>> result = new ArrayList<>();
             ipv4Entries.forEach(e -> result.add(e.toMap()));
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             return null;
         }
     }
@@ -59,7 +59,7 @@ public class Configuration {
             List<Map<String, Object>> result = new ArrayList<>();
             ipv4Entries.forEach(e -> result.add(e.toMap()));
             return result;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             return null;
         }
     }

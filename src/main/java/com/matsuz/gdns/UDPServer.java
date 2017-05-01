@@ -8,7 +8,11 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 
 
 public class UDPServer {
-    private static final int PORT = 53;
+    private static int port = 53;
+
+    public static void setPort(int port) {
+        UDPServer.port = port;
+    }
 
     public static void run() throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
@@ -19,7 +23,8 @@ public class UDPServer {
                     .option(ChannelOption.SO_BROADCAST, true)
                     .handler(new UDPServerHandler());
 
-            b.bind(PORT).sync().channel().closeFuture().await();
+            System.out.println("Listening on port " + port + "...");
+            b.bind(port).sync().channel().closeFuture().await();
         } finally {
             group.shutdownGracefully();
         }
