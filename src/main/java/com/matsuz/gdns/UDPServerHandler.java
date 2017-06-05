@@ -10,7 +10,13 @@ import org.xbill.DNS.*;
 public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception {
-        Message request = new Message(packet.content().nioBuffer());
+        Message request;
+        try {
+            request = new Message(packet.content().nioBuffer());
+        } catch (WireParseException e) {
+            // TODO: LOG
+            return;
+        }
 
         Record question = request.getQuestion();
         if (question == null) return;

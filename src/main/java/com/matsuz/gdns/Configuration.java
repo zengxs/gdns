@@ -39,6 +39,9 @@ public class Configuration {
         int len;
         while ((len = in.read(bytes)) != -1) out.write(bytes, 0, len);
 
+        in.close();
+        out.close();
+
         return new String(out.toByteArray(), StandardCharsets.UTF_8);
     }
 
@@ -56,6 +59,17 @@ public class Configuration {
     List<Map<String, Object>> getIPv6ConfigList() {
         try {
             List<Toml> ipv4Entries = toml.read(getStaticFileContent()).getTables("ipv6");
+            List<Map<String, Object>> result = new ArrayList<>();
+            ipv4Entries.forEach(e -> result.add(e.toMap()));
+            return result;
+        } catch (IOException | NullPointerException e) {
+            return null;
+        }
+    }
+
+    List<Map<String, Object>> getPtrConfigList() {
+        try {
+            List<Toml> ipv4Entries = toml.read(getStaticFileContent()).getTables("ptr");
             List<Map<String, Object>> result = new ArrayList<>();
             ipv4Entries.forEach(e -> result.add(e.toMap()));
             return result;
